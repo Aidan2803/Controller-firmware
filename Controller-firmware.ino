@@ -1,4 +1,4 @@
-// Version 0.1.0 Initial implementation
+// Version 0.1.1 Fix for the ConvertIntToArr (corrupted pow 10)
 
 #include <RH_ASK.h>
 #include <SPI.h>
@@ -64,7 +64,6 @@ int *Helper_ConvertIntToArr(int value) {
   for (int i = 0; digits_in_the_number > 0; i++) {
     Serial.print("digits_in_the_number:");
     Serial.println(digits_in_the_number);
-    // int pow10 = (pow(10, (digits_in_the_number - 1)));
 
     int pow10{1};
     for(int i = 0; i < digits_in_the_number -1; i++){
