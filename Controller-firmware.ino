@@ -1,4 +1,4 @@
-// Version 0.1.1 Fix for the ConvertIntToArr (corrupted pow 10)
+// Version 0.1.2 CreateMessageJoystickXY
 
 #include <RH_ASK.h>
 #include <SPI.h>
