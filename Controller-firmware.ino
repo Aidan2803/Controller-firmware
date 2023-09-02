@@ -4,6 +4,7 @@
 #include <SPI.h>
 
 #define DEBUG_ENABLED
+#define DEBUG_JOYSTICK_ENABLED
 
 RH_ASK driver;
 
@@ -45,7 +46,7 @@ int debounceDelay = 0;
 /// @brief Helper function to convert int into int array: 1234 -> |1|2|3|4|
 /// @param value
 /// @return int* (array pointer)
-int *Helper_ConvertIntToArr(int value) {
+int *Helper_ConvertIntToArr(int value, int *digits_amount) {
   int value_copy{value};
   int digits_in_the_number{1};
 
@@ -54,12 +55,16 @@ int *Helper_ConvertIntToArr(int value) {
     digits_in_the_number++;
   }
 
-  int *result_digits = new int[digits_in_the_number];
+  int *result_digits = new int[ANALOG_SIZE_CONST];
+  *digits_amount = digits_in_the_number;
 
-  for (int i = 0; i < digits_in_the_number; i++) {
+  for (int i = 0; i < ANALOG_SIZE_CONST; i++) {
     result_digits[i] = 0;
   }
+
+#ifdef DEBUG_ENABLED
   int digits_in_the_number_cp = digits_in_the_number;
+#endif
 
   for (int i = 0; digits_in_the_number > 0; i++) {
 #ifdef DEBUG_ENABLED
@@ -84,16 +89,27 @@ int *Helper_ConvertIntToArr(int value) {
     Serial.println(value_copy);
 
     digits_in_the_number--;
-
-#ifdef DEBUG_ENABLED
-    Serial.println("[Helper_ConvertIntToArr] Reslt digits:");
-    for (int i = 0; i < digits_in_the_number_cp; i++) {
-      Serial.print(result_digits[i]);
-    }
-    Serial.println();
-#endif
   }
 
+  // Delta between expected amount of digits (ANALOG_SIZE_CONST = 4) and actual
+  // amout of digits
+  int delta_digits = ANALOG_SIZE_CONST - digits_in_the_number_cp;
+
+  for (int j = 0; j < delta_digits; j++) {
+    for (int i = ANALOG_SIZE_CONST - 1; i > 0; i--) {
+      int temp = result_digits[i - 1];
+      result_digits[i - 1] = result_digits[i];
+      result_digits[i] = temp;
+    }
+  }
+
+#ifdef DEBUG_ENABLED
+  Serial.println("[Helper_ConvertIntToArr] Reslt digits:");
+  for (int i = 0; i < ANALOG_SIZE_CONST; i++) {
+    Serial.print(result_digits[i]);
+  }
+  Serial.println();
+#endif
   return result_digits;
 }
 
@@ -118,7 +134,7 @@ void setup() {
 /// @brief Get X value from joystick
 /// @return int Joystick X (analog 0-1023)
 int JoyStickGetX() {
-#ifdef DEBUG_ENABLED
+#ifdef DEBUG_JOYSTICK_ENABLED
   Serial.println("Get data from the Joystick X");
 #endif
   return analogRead(joystickPinX);
@@ -127,7 +143,7 @@ int JoyStickGetX() {
 /// @brief Get Y value from joystick
 /// @return int Joystick Y (analog 0-1023)
 int JoyStickGetY() {
-#ifdef DEBUG_ENABLED
+#ifdef DEBUG_JOYSTICK_ENABLED
   Serial.println("Get data from the Joystick Y");
 #endif
   return analogRead(joystickPinY);
@@ -159,7 +175,7 @@ void ButtonIsPressed() {
 /// @param x_value int
 /// @param y_value int
 void CreateMessageJoystickXY(int x_value, int y_value) {
-#ifdef DEBUG_ENABLED
+#ifdef DEBUG_JOYSTICK_ENABLED
   Serial.println("[CreateMessageJoystickXY] CreateMessageJoystickXY");
   Serial.print("[CreateMessageJoystickXY] Received x: ");
   Serial.println(x_value);
@@ -168,8 +184,14 @@ void CreateMessageJoystickXY(int x_value, int y_value) {
 #endif
   jxy_msg[0] = JOYSTICK_XY_MSG_HEADER;
 
-  int *x_array = Helper_ConvertIntToArr(x_value);
-  int *y_array = Helper_ConvertIntToArr(y_value);
+  int *x_value_digits_amount = new int;
+  int *y_value_digits_amount = new int;
+
+  int *x_array = Helper_ConvertIntToArr(x_value, x_value_digits_amount);
+  int *y_array = Helper_ConvertIntToArr(y_value, y_value_digits_amount);
+
+  if (x_array[0] = 0 && *x_value_digits_amount == 1) {
+  }
 
   for (int i = 0; i < ANALOG_SIZE_CONST; i++) {
     // 1000 - first four digit number
@@ -179,8 +201,6 @@ void CreateMessageJoystickXY(int x_value, int y_value) {
       }
     } else {
       jxy_msg[i + 1] = (char)(x_array[i] + '0');
-      Serial.println("x_array:");
-      Serial.println((char)(x_array[i] + '0'));
     }
   }
 
@@ -196,12 +216,6 @@ void CreateMessageJoystickXY(int x_value, int y_value) {
     } else {
       jxy_msg[j] = (char)(y_array[i] + '0');
     }
-  }
-
-Serial.println("[CreateMessageJoystickXY] Message:");
-  for(int i = 0; i < JOYSTICK_XY_MSG_LENGTH; i++){
-  Serial.print(jxy_msg[i]);
-  Serial.println();
   }
 
   delete[] x_array;
@@ -235,12 +249,12 @@ void CreateMessageButton(char *msg) {
 
 /// @brief Transmit created messages to the receiver
 void TransmitData() {
-#ifdef DEBUG_ENABLED
+#ifdef DEBUG_JOYSTICK_ENABLED
   Serial.println("CreateMessageJoystickXY");
 #endif
   driver.send((uint8_t *)jxy_msg, strlen(jxy_msg));
-#ifdef DEBUG_ENABLED
-  Serial.println("[TransmitData] Message:");
+#ifdef DEBUG_JOYSTICK_ENABLED
+  Serial.println("[TransmitData-JoystickXY] Message:");
   Serial.println(jxy_msg[0]); // H
   Serial.println(jxy_msg[1]); // X
   Serial.println(jxy_msg[2]); // X
@@ -265,6 +279,6 @@ void loop() {
   Serial.println("Joystick Y");
   Serial.println(y);
 #endif
-  CreateMessageJoystickXY(1111, 2222);
+  CreateMessageJoystickXY(4, 5);
   TransmitData();
 }
