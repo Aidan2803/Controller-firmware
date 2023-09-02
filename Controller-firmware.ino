@@ -1,4 +1,4 @@
-// Version 0.1.3 Update Helper_ConvertIntToArr
+// Version 0.1.4 Fix CreateMessageJoystickXY message formation + debug outputs
 
 #include <RH_ASK.h>
 #include <SPI.h>
