@@ -15,7 +15,7 @@ const int JOYSTICK_XY_MSG_LENGTH{9};     // HXXXXYYYY
 const int JOYSTICK_BUTTON_MSG_LENGTH{2}; // HV
 const int BUTTON_MSG_LENGTH{2};          // HV
 
-const char JOYSTICK_XY_MSG_HEADER{'0'};
+const short JOYSTICK_XY_MSG_HEADER{0};
 const char JOYSTICK_BUTTON_MSG_HEADER{'1'};
 const char BUTTON_MSG_HEADER{'2'};
 
@@ -190,32 +190,19 @@ void CreateMessageJoystickXY(int x_value, int y_value) {
   int *x_array = Helper_ConvertIntToArr(x_value, x_value_digits_amount);
   int *y_array = Helper_ConvertIntToArr(y_value, y_value_digits_amount);
 
-  if (x_array[0] = 0 && *x_value_digits_amount == 1) {
-  }
-
-  for (int i = 0; i < ANALOG_SIZE_CONST; i++) {
-    // 1000 - first four digit number
-    if (x_value < 1000) {
-      if (i == 0) {
-        jxy_msg[1] = '0';
-      }
-    } else {
-      jxy_msg[i + 1] = (char)(x_array[i] + '0');
-    }
+  for (int i = 0, j = 1; i < ANALOG_SIZE_CONST; i++, j++) {
+    jxy_msg[j] = x_array[i];
   }
 
   int second_value_start{ANALOG_SIZE_CONST + 1};
-  int j{second_value_start};
 
-  for (int i = 0; i < ANALOG_SIZE_CONST; i++, j++) {
-    // 1000 - first four digit number
-    if (y_value < 1000) {
-      if (j == ANALOG_SIZE_CONST + 1) {
-        jxy_msg[second_value_start] = '0';
-      }
-    } else {
-      jxy_msg[j] = (char)(y_array[i] + '0');
-    }
+  for (int i = 0; i < ANALOG_SIZE_CONST; i++) {
+    jxy_msg[second_value_start + i] = y_array[i];
+  }
+
+  Serial.println("jxy_msg:");
+  for (int i = 0; i < JOYSTICK_XY_MSG_LENGTH; i++) {
+    Serial.println((char)jxy_msg[i] + 0);
   }
 
   delete[] x_array;
@@ -255,15 +242,15 @@ void TransmitData() {
   driver.send((uint8_t *)jxy_msg, strlen(jxy_msg));
 #ifdef DEBUG_JOYSTICK_ENABLED
   Serial.println("[TransmitData-JoystickXY] Message:");
-  Serial.println(jxy_msg[0]); // H
-  Serial.println(jxy_msg[1]); // X
-  Serial.println(jxy_msg[2]); // X
-  Serial.println(jxy_msg[3]); // X
-  Serial.println(jxy_msg[4]); // X
-  Serial.println(jxy_msg[5]); // Y
-  Serial.println(jxy_msg[6]); // Y
-  Serial.println(jxy_msg[7]); // Y
-  Serial.println(jxy_msg[8]); // Y
+  Serial.println((char)jxy_msg[0] + 0); // H
+  Serial.println((char)jxy_msg[1] + 0); // X
+  Serial.println((char)jxy_msg[2] + 0); // X
+  Serial.println((char)jxy_msg[3] + 0); // X
+  Serial.println((char)jxy_msg[4] + 0); // X
+  Serial.println((char)jxy_msg[5] + 0); // Y
+  Serial.println((char)jxy_msg[6] + 0); // Y
+  Serial.println((char)jxy_msg[7] + 0); // Y
+  Serial.println((char)jxy_msg[8] + 0); // Y
 #endif
 
   delay(1000);
@@ -280,5 +267,6 @@ void loop() {
   Serial.println(y);
 #endif
   CreateMessageJoystickXY(4, 5);
+  delay(1000);
   TransmitData();
 }
