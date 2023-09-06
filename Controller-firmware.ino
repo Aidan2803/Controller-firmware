@@ -1,4 +1,4 @@
-// Version 0.1.5 Add button support for message creation
+// Version 1.0.0 Code refactored (logging purposes)
 
 #include <RH_ASK.h>
 #include <SPI.h>
