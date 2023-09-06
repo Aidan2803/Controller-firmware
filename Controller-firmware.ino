@@ -1,4 +1,4 @@
-// Version 0.1.4 Fix CreateMessageJoystickXY message formation + debug outputs
+// Version 0.1.5 Add button support for message creation
 
 #include <RH_ASK.h>
 #include <SPI.h>
