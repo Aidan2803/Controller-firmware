@@ -16,8 +16,8 @@ const int JOYSTICK_BUTTON_MSG_LENGTH{2}; // HV
 const int BUTTON_MSG_LENGTH{2};          // HV
 
 const short JOYSTICK_XY_MSG_HEADER{0};
-const char JOYSTICK_BUTTON_MSG_HEADER{'1'};
-const char BUTTON_MSG_HEADER{'2'};
+const short JOYSTICK_BUTTON_MSG_HEADER{1};
+const short BUTTON_MSG_HEADER{2};
 
 char *jxy_msg{};
 char *jbutt_msg{};
@@ -35,7 +35,7 @@ const int joystickPinY = 1;    // A1
 const int joystickPinButt = 4; // D2
 
 /* Button pins */
-const int buttonPin = 7; // D7
+const int buttonPin = 2; // D7
 
 /* Button variables */
 int buttonState = 0;
@@ -123,7 +123,7 @@ void setup() {
 
   pinMode(joystickPinX, INPUT);
   pinMode(joystickPinY, INPUT);
-  pinMode(joystickPinButt, INPUT);
+  pinMode(joystickPinButt, INPUT_PULLUP);
   pinMode(buttonPin, INPUT);
 
   jxy_msg = new char[JOYSTICK_XY_MSG_LENGTH];
@@ -151,11 +151,12 @@ int JoyStickGetY() {
 
 /// @brief Get button value from joystick
 /// @return bool Joystick Button (digital 0-1)
-bool JoyStcikIsButtonPressed() { return digitalRead(joystickPinButt); }
+bool JoyStcikIsButtonPressed() { return !digitalRead(joystickPinButt); }
 
 /// @brief Check if button is pressed
 void ButtonIsPressed() {
   int currentButtonState = digitalRead(buttonPin);
+  Serial.println("currentButtonState");
   Serial.println(currentButtonState);
 
   if (currentButtonState != lastButtonState) {
@@ -212,25 +213,29 @@ void CreateMessageJoystickXY(int x_value, int y_value) {
 /// @brief Create joystick-button-info message for Radio transmit
 /// @param button_status bool
 /// @param msg char*
-void CreateMessageJoystickButton(bool button_status, char *msg) {
-  msg[0] = JOYSTICK_BUTTON_MSG_HEADER;
+void CreateMessageJoystickButton(bool button_status) {
+  jbutt_msg[0] = JOYSTICK_BUTTON_MSG_HEADER;
 
   if (button_status) {
-    msg[1] = '1';
+    jbutt_msg[1] = 1;
   } else {
-    msg[1] = '0';
+    jbutt_msg[1] = 0;
   }
 }
 
 /// @brief Create button-info message for Radio transmit
 /// @param msg char*
-void CreateMessageButton(char *msg) {
-  msg[0] = BUTTON_MSG_HEADER;
+void CreateMessageButton() {
+  butt_msg[0] = BUTTON_MSG_HEADER;
+  Serial.println("BUTTON_MSG_HEADER");
+  Serial.println((char)BUTTON_MSG_HEADER + 0);
 
+  Serial.println("butt_msg[0]");
+  Serial.println((char)butt_msg[0] + 0);
   if (lastButtonState) {
-    msg[1] = '1';
+    butt_msg[1] = 1;
   } else {
-    msg[1] = '0';
+    butt_msg[1] = 0;
   }
 }
 
@@ -240,6 +245,8 @@ void TransmitData() {
   Serial.println("CreateMessageJoystickXY");
 #endif
   driver.send((uint8_t *)jxy_msg, strlen(jxy_msg));
+  driver.send((uint8_t *)jbutt_msg, strlen(jbutt_msg));
+  driver.send((uint8_t *)butt_msg, strlen(butt_msg));
 #ifdef DEBUG_JOYSTICK_ENABLED
   Serial.println("[TransmitData-JoystickXY] Message:");
   Serial.println((char)jxy_msg[0] + 0); // H
@@ -251,8 +258,16 @@ void TransmitData() {
   Serial.println((char)jxy_msg[6] + 0); // Y
   Serial.println((char)jxy_msg[7] + 0); // Y
   Serial.println((char)jxy_msg[8] + 0); // Y
-#endif
 
+  Serial.println("[TransmitData-JoystickButton] Message:");
+  Serial.println((char)jbutt_msg[0] + 0); // H
+  Serial.println((char)jbutt_msg[1] + 0); // V
+
+  Serial.println("[TransmitData-Button] Message:");
+  Serial.println((char)butt_msg[0] + 0); // H
+  Serial.println((char)butt_msg[1] + 0); // V
+
+#endif
   delay(1000);
 }
 
@@ -260,13 +275,17 @@ void TransmitData() {
 void loop() {
   int x = JoyStickGetX();
   int y = JoyStickGetY();
+  bool joy_stick_button_state = JoyStcikIsButtonPressed();
+  ButtonIsPressed();
 #ifdef DEBUG_ENABLED
   Serial.println("Joystick X");
   Serial.println(x);
   Serial.println("Joystick Y");
   Serial.println(y);
+  delay(300);
 #endif
-  CreateMessageJoystickXY(4, 5);
-  delay(1000);
+  CreateMessageJoystickXY(14, 25);
+  CreateMessageJoystickButton(joy_stick_button_state);
+  CreateMessageButton();
   TransmitData();
 }
