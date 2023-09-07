@@ -1,4 +1,4 @@
-// Version 1.0.0 Code refactored (logging purposes)
+// Version 1.0.1 Small fixes, update comments (+add readme file)
 
 #include <RH_ASK.h>
 #include <SPI.h>
