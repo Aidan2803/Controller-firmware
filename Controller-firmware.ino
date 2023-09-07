@@ -4,16 +4,21 @@
 #include <SPI.h>
 
 #define DEBUG_ENABLED
-// #define DEBUG_JOYSTICK_ENABLED
-// #define DEBUG_BUTTON_ENABLED
+#define DEBUG_JOYSTICK_ENABLED
+#define DEBUG_BUTTON_ENABLED
 
 RH_ASK driver;
 
 /* Transmit message creation variables */
+
+///@brief  Maximum possible amout of digits in the analog value
 const int ANALOG_SIZE_CONST{4};
 
-const int JOYSTICK_XY_MSG_LENGTH{9};     // HXXXXYYYY
+/// @brief Lenght of a joystick XY message (in bytes)
+const int JOYSTICK_XY_MSG_LENGTH{9}; // HXXXXYYYY
+/// @brief Lenght of a joystick button message (in bytes)
 const int JOYSTICK_BUTTON_MSG_LENGTH{2}; // HV
+/// @brief Lenght of a button message (in bytes)
 const int BUTTON_MSG_LENGTH{2};          // HV
 
 const short JOYSTICK_XY_MSG_HEADER{0};
@@ -191,7 +196,6 @@ void CreateMessageJoystickXY(int x_value, int y_value) {
 
 /// @brief Create joystick-button-info message for Radio transmit
 /// @param button_status bool
-/// @param msg char*
 void CreateMessageJoystickButton(bool button_status) {
   jbutt_msg[0] = JOYSTICK_BUTTON_MSG_HEADER;
 
@@ -203,7 +207,6 @@ void CreateMessageJoystickButton(bool button_status) {
 }
 
 /// @brief Create button-info message for Radio transmit
-/// @param msg char*
 void CreateMessageButton() {
   butt_msg[0] = BUTTON_MSG_HEADER;
 
@@ -245,7 +248,7 @@ void TransmitData() {
   delay(1000);
 }
 
-/// @brief Loop
+/// @brief Main loop
 void loop() {
   int x = JoyStickGetX();
   int y = JoyStickGetY();
@@ -259,7 +262,7 @@ void loop() {
   Serial.println(y);
 #endif
 
-  CreateMessageJoystickXY(14, 25);
+  CreateMessageJoystickXY(x, y);
   CreateMessageJoystickButton(joy_stick_button_state);
   CreateMessageButton();
   TransmitData();
