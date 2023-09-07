@@ -1,4 +1,4 @@
-// Version 1.1.0 Change transmission type to transmit one main message
+// Version 1.1.1 Small fixes
 
 #include <RH_ASK.h>
 #include <SPI.h>

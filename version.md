@@ -9,3 +9,4 @@ Version 0.1.5 Add button support for message creation<br>
 Version 1.0.0 Code refactored (logging purposes)<br>
 Version 1.0.1 Small fixes, update comments (+add readme file)<br>
 Version 1.1.0 Change transmission type to transmit one main message<br>
+Version 1.1.1 Small fixes<br>
