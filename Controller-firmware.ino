@@ -281,5 +281,6 @@ void loop() {
   CreateMessageJoystickXY(x, y);
   CreateMessageJoystickButton(joy_stick_button_state);
   CreateMessageButton();
+  PackData();
   TransmitData();
 }
