@@ -19,7 +19,7 @@ const int JOYSTICK_XY_MSG_LENGTH{9}; // HXXXXYYYY
 /// @brief Lenght of a joystick button message (in bytes)
 const int JOYSTICK_BUTTON_MSG_LENGTH{2}; // HV
 /// @brief Lenght of a button message (in bytes)
-const int BUTTON_MSG_LENGTH{2};          // HV
+const int BUTTON_MSG_LENGTH{2}; // HV
 
 const short JOYSTICK_XY_MSG_HEADER{0};
 const short JOYSTICK_BUTTON_MSG_HEADER{1};
@@ -28,6 +28,7 @@ const short BUTTON_MSG_HEADER{2};
 char *jxy_msg{};
 char *jbutt_msg{};
 char *butt_msg{};
+char *main_msg{};
 
 /* Pins */
 
@@ -127,6 +128,9 @@ void setup() {
   jxy_msg = new char[JOYSTICK_XY_MSG_LENGTH];
   jbutt_msg = new char[JOYSTICK_BUTTON_MSG_LENGTH];
   butt_msg = new char[BUTTON_MSG_LENGTH];
+  int main_msg_length{JOYSTICK_XY_MSG_LENGTH + JOYSTICK_BUTTON_MSG_LENGTH +
+                      BUTTON_MSG_LENGTH};
+  main_msg = new char[main_msg_length];
 }
 
 /// @brief Get X value from joystick
@@ -217,11 +221,23 @@ void CreateMessageButton() {
   }
 }
 
+void PackData() {
+  for (int i = 0; i < JOYSTICK_XY_MSG_LENGTH; i++) {
+    main_msg[i] = jxy_msg[i];
+  }
+  for (int i = JOYSTICK_XY_MSG_LENGTH, j = 0; j < JOYSTICK_BUTTON_MSG_LENGTH;
+       i++, j++) {
+    main_msg[i] = jbutt_msg[j];
+  }
+  for (int i = JOYSTICK_XY_MSG_LENGTH + JOYSTICK_BUTTON_MSG_LENGTH, j = 0;
+       j < BUTTON_MSG_LENGTH; j++) {
+    main_msg[i] = butt_msg[j];
+  }
+};
+
 /// @brief Transmit created messages to the receiver
 void TransmitData() {
-  driver.send((uint8_t *)jxy_msg, strlen(jxy_msg));
-  driver.send((uint8_t *)jbutt_msg, strlen(jbutt_msg));
-  driver.send((uint8_t *)butt_msg, strlen(butt_msg));
+  driver.send((uint8_t *)main_msg, strlen(main_msg));
 #ifdef DEBUG_JOYSTICK_ENABLED
   Serial.println("[TransmitData-JoystickXY] Message:");
   Serial.println((char)jxy_msg[0] + 0); // H
